@@ -36,7 +36,7 @@
                 $endpointWithoutToken = $uri[3] == "addUser";
                 getEndpoint(new UserController(), $uri, $endpointWithoutToken);
             case 'transaction':
-                getEndpoint(new BookController(), $uri);
+                getEndpoint(new TransactionController(), $uri);
             case 'auth':
                 getEndpoint(new AuthorizationController(), $uri, true);
             default:

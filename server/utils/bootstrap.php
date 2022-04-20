@@ -12,6 +12,7 @@ require_once PROJECT_ROOT_PATH . "/Controllers/Api/AuthorizationController.php";
 // include the use model file
 require_once PROJECT_ROOT_PATH."/Models/Database.php";
 require_once PROJECT_ROOT_PATH . "/Models/UserModel.php";
+require_once PROJECT_ROOT_PATH . "/Models/TransactionModel.php";
 
 require_once PROJECT_ROOT_PATH . "/utils/utils.php";
 
