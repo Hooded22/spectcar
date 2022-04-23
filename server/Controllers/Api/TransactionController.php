@@ -37,10 +37,9 @@ class TransactionController extends BaseController
             $transaction = new TransactionModel();
 
             parse_str($urlParams['query'],$params);
-            $date = $params['date'];
-            $date = str_replace("-","/", $date);
+            $year = $params['year'];
             
-            $responseData = json_encode($transaction->getBestSalesForDate($date));
+            $responseData = json_encode($transaction->getBestSalesForDate($year));
             $this->responseData($responseData);
 
         } catch (Error $e) {
@@ -192,6 +191,81 @@ class TransactionController extends BaseController
         }
     }
 
+    public function findAllCarsAction() {
+        if(!$this->validateMethod('GET')) {
+            return;
+        }
+
+        $strErrorDesc = null;
+        $strErrorHeader = null;
+        $responseData = '';
+
+        try {
+            $urlParams = parse_url($_SERVER['REQUEST_URI']);
+            $transaction = new TransactionModel();
+            
+            $responseData = json_encode($transaction->getAllCars());
+            $this->responseData($responseData);
+
+        } catch (Error $e) {
+            $strErrorDesc = $e->getMessage().'Something went wrong! Please contact support.';
+            $strErrorHeader = 'HTTP/1.1 500 Internal Server Error';
+        } finally {
+            $this->responseData($responseData, $strErrorDesc, $strErrorHeader);
+        }
+    }
+
+    public function findAllCarsByMakeAction() {
+        if(!$this->validateMethod('GET')) {
+            return;
+        }
+
+        $strErrorDesc = null;
+        $strErrorHeader = null;
+        $responseData = '';
+
+        try {
+            $urlParams = parse_url($_SERVER['REQUEST_URI']);
+            $transaction = new TransactionModel();
+            parse_str($urlParams['query'],$params);
+            $car_make = $params['car_make'];
+
+            
+            $responseData = json_encode($transaction->getCarsByMake($car_make));
+            $this->responseData($responseData);
+
+        } catch (Error $e) {
+            $strErrorDesc = $e->getMessage().'Something went wrong! Please contact support.';
+            $strErrorHeader = 'HTTP/1.1 500 Internal Server Error';
+        } finally {
+            $this->responseData($responseData, $strErrorDesc, $strErrorHeader);
+        }
+    }
+
+    public function findAllCarsMakesAction() {
+        if(!$this->validateMethod('GET')) {
+            return;
+        }
+
+        $strErrorDesc = null;
+        $strErrorHeader = null;
+        $responseData = '';
+
+        try {
+            $urlParams = parse_url($_SERVER['REQUEST_URI']);
+            $transaction = new TransactionModel();
+            
+            $responseData = json_encode($transaction->getAllCarsMakes());
+            $this->responseData($responseData);
+
+        } catch (Error $e) {
+            $strErrorDesc = $e->getMessage().'Something went wrong! Please contact support.';
+            $strErrorHeader = 'HTTP/1.1 500 Internal Server Error';
+        } finally {
+            $this->responseData($responseData, $strErrorDesc, $strErrorHeader);
+        }
+    }
+
     public function addByJsonAction() {
 
         if(!$this->validateMethod('POST')) {
@@ -212,5 +286,93 @@ class TransactionController extends BaseController
             $strErrorHeader = 'HTTP/1.1 500 Internal Server Error';
             $this->responseData($responseData, $strErrorDesc, $strErrorHeader);
         }
+    }
+
+    public function findCarValueInMonthsAction() {
+        if(!$this->validateMethod('GET')) {
+            return;
+        }
+
+        $strErrorDesc = null;
+        $strErrorHeader = null;
+        $responseData = '';
+
+        try {
+            $urlParams = parse_url($_SERVER['REQUEST_URI']);
+            $transaction = new TransactionModel();
+
+            parse_str($urlParams['query'],$params);
+            $car_model = $params['car_model'];
+            $car_make = $params['car_make'];
+            $currency = $params['currency'];
+            $years = $params['years'];
+            $currentYear = date('Y');
+            
+            $carData = $transaction->getAvgCarPrice($car_model, $car_make)[0];
+            $currencyRates = $this->getCurrencyRate($currency, $years);
+
+            foreach ($currencyRates as $key => $value) {
+                $year = $currentYear - $key;
+                $avgPriceInYear = round($carData['avg_price'] / $value,3);
+                if($year == $currentYear) {
+                    $carData["avg_price_$currency"] = "$avgPriceInYear";
+                } else {
+                    $carData["avg_price_".$currency."_in_$year"] = "$avgPriceInYear";
+                }
+            }
+
+            $this->responseData(json_encode($carData));
+
+        } catch (Error $e) {
+            $strErrorDesc = $e->getMessage().'Something went wrong! Please contact support.';
+            $strErrorHeader = 'HTTP/1.1 500 Internal Server Error';
+        } finally {
+            $this->responseData($responseData, $strErrorDesc, $strErrorHeader);
+        }
+    }
+
+    private function calculateRatesAvg($currentResult) {
+        $rates = $currentResult->rates;
+        $sum = 0;
+           
+        foreach($rates as $rateItem) {
+            $sum += $rateItem->mid;
+        };
+
+        return $sum / count($rates);
+    }
+
+    private function getCurrencyRate($currencyCode, $years) {
+        $curl = curl_init();
+        $i = 1;
+        $result = [];
+        $currentYear = date("Y");
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+
+
+        while ($i <= $years) {
+            $yearForAPI = $currentYear - $i;
+            $url = "https://api.nbp.pl/api/exchangerates/rates/A/$currencyCode/$yearForAPI-01-01/$yearForAPI-12-31?format=JSON";
+            
+            curl_setopt($curl, CURLOPT_URL, $url);
+            $currentResult = json_decode(curl_exec($curl));
+
+            array_push($result, $this->calculateRatesAvg($currentResult));
+
+            $i++;
+        }
+
+        $today = date("Y-m-d");
+        $urlForCurrentYear = "https://api.nbp.pl/api/exchangerates/rates/A/$currencyCode/$currentYear-01-01/$today?format=JSON";
+
+        curl_setopt($curl, CURLOPT_URL, $urlForCurrentYear);
+        $currentYearRates = json_decode(curl_exec($curl));
+
+        array_push($result, $this->calculateRatesAvg($currentYearRates));
+
+
+        curl_close($curl);
+
+        return $result;
     }
 }

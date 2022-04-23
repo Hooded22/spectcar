@@ -15,22 +15,27 @@
            return $this->select($query);
        }
 
+       public function getAvgCarPrice($car_model, $car_make) {
+        $query = "SELECT car_make, car_model, car_model_year, COUNT(id) as 'sales_count', AVG(car_price) as 'avg_price' FROM `transactions` WHERE car_model LIKE '$car_model' AND car_make LIKE '$car_make'";
+        return $this->select($query);
+       }
+
        public function getBestSalesForAllCities($cities) {
             
        }
 
        public function getBestSalesForDate($date) {
-            $query = "SELECT * FROM `transactions` WHERE transaction_date LIKE '$date' ORDER BY car_price LIMIT 10";
+            $query = "SELECT * FROM `transactions` WHERE transaction_date LIKE '%$date' ORDER BY car_price DESC LIMIT 10";
             return $this->select($query);
        }
 
        public function getBestSalesForAge($age) {
-            $query = "SELECT * FROM `transactions` WHERE client_age = $age ORDER BY car_price LIMIT 10";
+            $query = "SELECT * FROM `transactions` WHERE client_age = $age ORDER BY car_price DESC LIMIT 10";
             return $this->select($query);
        }
 
        public function getBestSalesForGender($gender) {
-            $query = "SELECT * FROM `transactions` WHERE client_gender LIKE '$gender' ORDER BY car_price LIMIT 10";
+            $query = "SELECT * FROM `transactions` WHERE client_gender LIKE '$gender' ORDER BY car_price DESC LIMIT 10";
             return $this->select($query);
        }
 
@@ -43,6 +48,21 @@
          $query = "SELECT DISTINCT transaction_city FROM transactions";
          return $this->executeStatement($query);
        }
+
+       public function getAllCars() {
+          $query = "SELECT DISTINCT car_model, car_make FROM transactions";
+          return $this->select($query);
+        }
+
+        public function getAllCarsMakes() {
+          $query = "SELECT DISTINCT car_make FROM transactions";
+          return $this->select($query);
+        }
+
+        public function getCarsByMake($car_make) {
+          $query = "SELECT DISTINCT car_model, car_make FROM transactions WHERE car_make LIKE '$car_make'";
+          return $this->select($query);
+        }
 
        public function addTransaction(
         $transactionJson
