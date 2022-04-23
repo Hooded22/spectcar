@@ -273,12 +273,10 @@ class TransactionController extends BaseController
         }
 
         $transactionJson = json_decode($_POST['data'], true);
-        $requestMethod = $_SERVER["REQUEST_METHOD"];
         try {
             $transaction = new TransactionModel();
             $responseData = json_encode($transaction->addTransaction($transactionJson));
-            $this->responseData($responseData);
-            echo "Added successfully";
+            $this->responseData("Added successfully");
 
         } catch (Error $e) {
             $responseData = "ERROR";

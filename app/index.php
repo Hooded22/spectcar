@@ -31,5 +31,9 @@
     <ul>
         <li><a href="carValueInYears.php">Wartość samochodu na przestrzeni x lat</a></l1>
     </ul>
+    <h2>Importuj JSON: </h2>
+    <a href="addTransaction.php">Importuj transakcje</a>
+    </br>
+    <a href="logout.php">Wyloguj</a>
 </body>
 </html>

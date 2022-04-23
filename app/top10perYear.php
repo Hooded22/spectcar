@@ -51,5 +51,19 @@
             displayData($data);
         ?>
     </table>
+    <?php
+        if(isset($_POST['file_name']) && isset($data)) {
+            file_put_contents($_POST['file_name'].".json", json_encode($data));
+        }
+    ?>
+    <form method="post" action="top10perYear.php">
+        <table>
+            <tr>
+                <td><label for="currency">Nazwa pliku</label></td>
+                <td><input required type="text" name="file_name" id="login" value="export_result" size="40"/></td>
+            </tr>
+        </table>
+        <input type="submit" id="submit" value="Exportuj do JSON">
+    </form>
 </body>
 </html>

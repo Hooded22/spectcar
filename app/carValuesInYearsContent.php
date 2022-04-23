@@ -60,11 +60,25 @@
                echo "<td>$value</td>";
             }
             echo "</tbody></tr>";
+            $_SESSION['data_to_export'] = $data;
         } else {
             echo "<h3>No data</h3>";
         }
         ?>
     </table>
-    <a href="exportResult.php">Exportuj do JSON</a>
+    <?php
+        if(isset($_POST['file_name']) && isset($data)) {
+            file_put_contents($_POST['file_name'].".json", json_encode($data));
+        }
+    ?>
+    <form method="post" action="carValuesInYearsContent.php">
+        <table>
+            <tr>
+                <td><label for="currency">Nazwa pliku</label></td>
+                <td><input required type="text" name="file_name" id="login" value="export_result" size="40"/></td>
+            </tr>
+        </table>
+        <input type="submit" id="submit" value="Exportuj do JSON">
+    </form>
 </body>
 </html>

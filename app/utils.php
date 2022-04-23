@@ -3,8 +3,8 @@
         return callAPI("GET",$url, false, $token);
     }
 
-    function postToAPI($url, $token) {
-
+    function postToAPI($url, $data, $token) {
+        return callAPI("POST",$url, $data, $token);
     }
 
     function callAPI($method, $url, $data = false, $token = false) {
